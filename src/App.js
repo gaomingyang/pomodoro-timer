@@ -6,13 +6,13 @@ import './App.scss';
 
 function App() {
   //默认时间
-  const SESSION_TIME = 1
-  const BREAK_TIME = 1
-  const SECONDS_PER_MINUTE = 10
+  const SESSION_TIME = 25 
+  const BREAK_TIME = 5
+  const SECONDS_PER_MINUTE = 60
 
-  const [sessionTime, setSessionTime] = useState(SESSION_TIME) //一段时间长度
-  const [breakTime, setBreakTime] = useState(BREAK_TIME) //单位是分钟
-  const [timerLabel, setTimerLabel] = useState("Session"); //显示的文本
+  const [sessionTime, setSessionTime] = useState(SESSION_TIME) //一段session的时间长度单位分钟
+  const [breakTime, setBreakTime] = useState(BREAK_TIME) //休息时间，单位是分钟
+  const [timerLabel, setTimerLabel] = useState("Session"); //clock上显示当前属于session还是block
   const [timerStatus, setTimerStatus] = useState('stop'); //整个计时器状态 倒计时在运行还是不运行
   const [sessionStatus, setSessionStatus] = useState('stop'); //session计时器状态，当前是否在运行session倒计时
   const [breakStatus, setBreakStatus] = useState('stop'); //break时间倒计时状态
@@ -21,6 +21,13 @@ function App() {
 
   useEffect(()=>{
     setTimeLeft(sessionTime*SECONDS_PER_MINUTE);
+    
+    setTimerStatus('stop')
+    setSessionStatus("stop")
+    setBreakStatus("stop")
+    audioRef.current.pause();
+    audioRef.currentTime=0;
+
   },[sessionTime])  //初始化或者变更sessionTime时，设置剩余时间为session时间转换为妙
 
   useEffect(()=>{
@@ -94,19 +101,21 @@ function App() {
     setSessionTime(SESSION_TIME)
     setBreakTime(BREAK_TIME)
     setTimeLeft(SESSION_TIME*SECONDS_PER_MINUTE)
+    audioRef.current.pause();
+    audioRef.currentTime=0;
   }
 
   //更新剩余时间
-  function updateTimeLeft() {
-    console.log("执行更新了")
-    console.log(Date.now())
-    console.log("剩余时间:",timeLeft)
-    if(timeLeft > 0) {
-      let newTimeLeft = timeLeft-1
-      console.log("设置新时间：",newTimeLeft)
-      setTimeLeft(newTimeLeft)
-    }
-  }
+  // function updateTimeLeft() {
+  //   console.log("执行更新了")
+  //   console.log(Date.now())
+  //   console.log("剩余时间:",timeLeft)
+  //   if(timeLeft > 0) {
+  //     let newTimeLeft = timeLeft-1
+  //     console.log("设置新时间：",newTimeLeft)
+  //     setTimeLeft(newTimeLeft)
+  //   }
+  // }
 
   const  minutes = Math.floor(timeLeft / 60);
   const  seconds = timeLeft % 60;
