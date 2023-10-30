@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState,useEffect } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faPlus, faMinus, faPlay,faPause, faRotateLeft } from '@fortawesome/free-solid-svg-icons';
 
@@ -8,19 +8,54 @@ function App() {
   const [sessionTime, setSessionTime] = useState(25) //一段时间长度
   const [breakTime, setBreakTime] = useState(5) //单位是分钟
   const [timeLabel, setTimeLabel] = useState("Session"); //显示的文本
-  const [timerStatus, setTimerStatus] = useState('stop');
+  const [timerStatus, setTimerStatus] = useState('stop'); //计时器状态
 
-  const minutes = sessionTime;
-  const seconds = 0;
+  const [timeLeft,setTimeLeft] = useState(25*60) //计时器剩余时间，单位秒
+
+  useEffect(()=>{
+    const newLeftTime = sessionTime*60
+    setTimeLeft(newLeftTime)
+  },[sessionTime])  //初始化或者变更sessionTime时，设置剩余时间为session时间转换为妙
+
+  useEffect(()=>{
+    if(timerStatus === 'start') {
+      console.log("现在是start")
+      const timer = setInterval(() => {
+        if (timeLeft > 0) {
+          setTimeLeft(timeLeft - 1);
+        } else {
+          clearInterval(timer);
+        }
+      }, 1000);
+
+      return ()=>{
+        clearInterval(timer)
+      }
+    }else{
+      console.log("现在stop")
+    }
+  },[timerStatus,timeLeft]) //计时器变化改变时执行
 
   //操控开始暂停、刷新
   function clickStartStop() {
     console.log("click start/stop")
-    if (timerStatus == 'stop') {
-      console.log("开始启动");
+    setTimerStatus(timerStatus === 'stop' ? 'start' : 'stop');
+  }
 
+  //更新剩余时间
+  function updateTimeLeft() {
+    console.log("执行更新了")
+    console.log(Date.now())
+    console.log("剩余时间:",timeLeft)
+    if(timeLeft > 0) {
+      let newTimeLeft = timeLeft-1
+      console.log("设置新时间：",newTimeLeft)
+      setTimeLeft(newTimeLeft)
     }
   }
+
+  const minutes = Math.floor(timeLeft / 60);
+  const seconds = timeLeft % 60;
 
 
   //设置时间的一些方法
@@ -50,7 +85,10 @@ function App() {
     setBreakTime(breakTime - 1)
   }
 
+
+
   return (
+    
     <div className="App">
       <div id="clock-container">
         <h2 id='title'>Pomodoro Timer</h2>
@@ -64,8 +102,7 @@ function App() {
 
         <div id='controller'>
           <div id='start_stop' className='control-btn' onClick={clickStartStop}>
-            <FontAwesomeIcon icon={faPlay} size='2x'/>
-            <FontAwesomeIcon icon={faPause} size='2x'/>
+            {timerStatus === "stop" ? <FontAwesomeIcon icon={faPlay} size='2x'/> : <FontAwesomeIcon icon={faPause} size='2x'/> }
           </div>
           <div id='reset' className='control-btn'>
             <FontAwesomeIcon icon={faRotateLeft} size='2x'/>
