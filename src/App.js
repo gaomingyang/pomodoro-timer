@@ -19,7 +19,7 @@ function App() {
 
   useEffect(()=>{
     if(timerStatus === 'start') {
-      console.log("现在是start")
+      // console.log("现在是start")
       const timer = setInterval(() => {
         if (timeLeft > 0) {
           setTimeLeft(timeLeft - 1);
@@ -32,14 +32,21 @@ function App() {
         clearInterval(timer)
       }
     }else{
-      console.log("现在stop")
+      // console.log("现在stop")
     }
   },[timerStatus,timeLeft]) //计时器变化改变时执行
 
   //操控开始暂停、刷新
   function clickStartStop() {
-    console.log("click start/stop")
+    // console.log("click start/stop")
     setTimerStatus(timerStatus === 'stop' ? 'start' : 'stop');
+  }
+
+  function clickReset() {
+    // console.log("点击reset")
+    setTimerStatus('stop')
+    setSessionTime(25)
+    setBreakTime(5)
   }
 
   //更新剩余时间
@@ -104,8 +111,8 @@ function App() {
           <div id='start_stop' className='control-btn' onClick={clickStartStop}>
             {timerStatus === "stop" ? <FontAwesomeIcon icon={faPlay} size='2x'/> : <FontAwesomeIcon icon={faPause} size='2x'/> }
           </div>
-          <div id='reset' className='control-btn'>
-            <FontAwesomeIcon icon={faRotateLeft} size='2x'/>
+          <div id='reset' className='control-btn' onClick={clickReset} alt="reset">
+            <FontAwesomeIcon icon={faRotateLeft} size='2x' alt='reset'/>
           </div>
         </div>
 
