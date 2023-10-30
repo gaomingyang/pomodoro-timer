@@ -1,21 +1,30 @@
-import { useState,useEffect } from 'react';
+import { useState,useEffect, useRef } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faPlus, faMinus, faPlay,faPause, faRotateLeft } from '@fortawesome/free-solid-svg-icons';
 
 import './App.scss';
 
 function App() {
-  const [sessionTime, setSessionTime] = useState(25) //一段时间长度
-  const [breakTime, setBreakTime] = useState(5) //单位是分钟
+  //默认时间
+  const SESSION_TIME = 1
+  const BREAK_TIME = 1
+  const SECONDS_PER_MINUTE = 10
+
+  const [sessionTime, setSessionTime] = useState(SESSION_TIME) //一段时间长度
+  const [breakTime, setBreakTime] = useState(BREAK_TIME) //单位是分钟
   const [timeLabel, setTimeLabel] = useState("Session"); //显示的文本
   const [timerStatus, setTimerStatus] = useState('stop'); //计时器状态
+  const [breakStatus, setBreakStatus] = useState('stop'); //break时间倒计时状态
 
-  const [timeLeft,setTimeLeft] = useState(25*60) //计时器剩余时间，单位秒
+  const [timeLeft,setTimeLeft] = useState(sessionTime*SECONDS_PER_MINUTE) //计时器剩余时间，单位秒
+  const [breakTimeLeft,setBreakTimeLeft] = useState(breakTime*SECONDS_PER_MINUTE) //break时间计时器，单位秒
+
+  const audioRef = useRef(null)
 
   useEffect(()=>{
-    const newLeftTime = sessionTime*60
-    setTimeLeft(newLeftTime)
-  },[sessionTime])  //初始化或者变更sessionTime时，设置剩余时间为session时间转换为妙
+    setTimeLeft(sessionTime*SECONDS_PER_MINUTE);
+    setBreakTimeLeft(breakTime*SECONDS_PER_MINUTE);
+  },[sessionTime,breakTime])  //初始化或者变更sessionTime时，设置剩余时间为session时间转换为妙
 
   useEffect(()=>{
     if(timerStatus === 'start') {
@@ -25,6 +34,12 @@ function App() {
           setTimeLeft(timeLeft - 1);
         } else {
           clearInterval(timer);
+          //播放音乐
+          // audioRef.current.play() //正常，先注释
+          setTimerStatus("stop")
+          setTimeLabel('Break')
+          setBreakStatus("start")
+
         }
       }, 1000);
 
@@ -34,7 +49,28 @@ function App() {
     }else{
       // console.log("现在stop")
     }
-  },[timerStatus,timeLeft]) //计时器变化改变时执行
+
+    if (breakStatus == "start") {
+      console.log("到了break start")
+      const breakTimer = setInterval(()=>{
+        if (breakTimeLeft > 0) {
+          setBreakTimeLeft(breakTimeLeft -1);
+        }else{
+          //break结束了
+          clearInterval(breakTimer);
+          setTimeLabel("Session")
+          setTimerStatus("start")
+        }
+      })
+
+      return ()=>{
+        clearInterval(breakTimer)
+      }
+      
+    }
+
+
+  },[timerStatus,timeLeft,breakTime]) //计时器变化改变时执行
 
   //操控开始暂停、刷新
   function clickStartStop() {
@@ -45,8 +81,9 @@ function App() {
   function clickReset() {
     // console.log("点击reset")
     setTimerStatus('stop')
-    setSessionTime(25)
-    setBreakTime(5)
+    setSessionTime(SESSION_TIME)
+    setBreakTime(BREAK_TIME)
+    setTimeLeft(SESSION_TIME*SECONDS_PER_MINUTE)
   }
 
   //更新剩余时间
@@ -101,7 +138,7 @@ function App() {
         <h2 id='title'>Pomodoro Timer</h2>
 
         <div id="clock">
-          <div id='time-label'>{timeLabel}</div>
+          <div id='timer-label'>{timeLabel}</div>
           <div id='time-left'>
             {`${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`}
           </div>
@@ -114,19 +151,20 @@ function App() {
           <div id='reset' className='control-btn' onClick={clickReset} alt="reset">
             <FontAwesomeIcon icon={faRotateLeft} size='2x' alt='reset'/>
           </div>
+          <audio id='beep' src='https://github.com/gaomingyang/pomodoro-timer/raw/main/public/audios/sound_1.mp3' ref={audioRef}></audio>
         </div>
 
         <div id="setting">
           <div className='setting-item'>
             <div id="session-label">Session Length</div>
             <div className="setting-bar">
-              <div className='setting-btn' onClick={handleSessionIncrease}>
+              <div className='setting-btn' id='session-increment' onClick={handleSessionIncrease}>
                 <FontAwesomeIcon icon={faPlus} size="1x" color="black" />
               </div>
 
               <div id='session-length'>{sessionTime}</div>
 
-              <div className='setting-btn' onClick={handleSessionDecrease}>
+              <div className='setting-btn' id='session-decrement' onClick={handleSessionDecrease}>
                 <FontAwesomeIcon icon={faMinus} size="1x" color="black" />
               </div>
 
@@ -136,11 +174,11 @@ function App() {
           <div className='setting-item'>
             <div id='break-label'>Break Length</div>
             <div className="setting-bar">
-              <div className='setting-btn' onClick={handleBreakIncrease}>
+              <div className='setting-btn' id='break-increment' onClick={handleBreakIncrease}>
                 <FontAwesomeIcon icon={faPlus} size="1x" color="black" />
               </div>
               <div id='break-length'>{breakTime}</div>
-              <div className='setting-btn' onClick={handleBreakDecrease}>
+              <div className='setting-btn' id='break-decrement' onClick={handleBreakDecrease}>
                 <FontAwesomeIcon icon={faMinus} size="1x" color="black" />
               </div>
             </div>

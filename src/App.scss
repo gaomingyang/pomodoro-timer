@@ -31,7 +31,7 @@
     height: 160px;
 
     outline: 1px solid black;
-    #time-label{
+    #timer-label{
       margin-top: 20px;
     }
     #time-left{
@@ -56,7 +56,7 @@
     justify-content: space-around;
 
     .setting-item{
-      margin: 20px 10px;
+      margin: 10px;
 
       .setting-bar{
         display: flex;
