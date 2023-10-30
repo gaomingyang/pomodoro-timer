@@ -12,75 +12,85 @@ function App() {
 
   const [sessionTime, setSessionTime] = useState(SESSION_TIME) //一段时间长度
   const [breakTime, setBreakTime] = useState(BREAK_TIME) //单位是分钟
-  const [timeLabel, setTimeLabel] = useState("Session"); //显示的文本
-  const [timerStatus, setTimerStatus] = useState('stop'); //计时器状态
+  const [timerLabel, setTimerLabel] = useState("Session"); //显示的文本
+  const [timerStatus, setTimerStatus] = useState('stop'); //整个计时器状态 倒计时在运行还是不运行
+  const [sessionStatus, setSessionStatus] = useState('stop'); //session计时器状态，当前是否在运行session倒计时
   const [breakStatus, setBreakStatus] = useState('stop'); //break时间倒计时状态
-
   const [timeLeft,setTimeLeft] = useState(sessionTime*SECONDS_PER_MINUTE) //计时器剩余时间，单位秒
-  const [breakTimeLeft,setBreakTimeLeft] = useState(breakTime*SECONDS_PER_MINUTE) //break时间计时器，单位秒
-
   const audioRef = useRef(null)
 
   useEffect(()=>{
     setTimeLeft(sessionTime*SECONDS_PER_MINUTE);
-    setBreakTimeLeft(breakTime*SECONDS_PER_MINUTE);
-  },[sessionTime,breakTime])  //初始化或者变更sessionTime时，设置剩余时间为session时间转换为妙
+  },[sessionTime])  //初始化或者变更sessionTime时，设置剩余时间为session时间转换为妙
 
   useEffect(()=>{
-    if(timerStatus === 'start') {
-      // console.log("现在是start")
+    if(sessionStatus === 'start') {
+      console.log("到了session倒计时启动",Date.now())
       const timer = setInterval(() => {
         if (timeLeft > 0) {
           setTimeLeft(timeLeft - 1);
         } else {
           clearInterval(timer);
           //播放音乐
-          // audioRef.current.play() //正常，先注释
-          setTimerStatus("stop")
-          setTimeLabel('Break')
+          audioRef.current.play() //正常，先注释
+          setSessionStatus("stop") //停止了session倒计时运行状态
+          //切换到break倒计时
+          setTimerLabel('Break')
           setBreakStatus("start")
-
+          setTimeLeft(breakTime*SECONDS_PER_MINUTE) //设置剩余时间为breaktime的时间换成秒
         }
       }, 1000);
 
       return ()=>{
         clearInterval(timer)
       }
-    }else{
-      // console.log("现在stop")
     }
 
-    if (breakStatus == "start") {
-      console.log("到了break start")
+    if (breakStatus === "start") {
+      console.log("到了break倒计时启动",Date.now())
+      
       const breakTimer = setInterval(()=>{
-        if (breakTimeLeft > 0) {
-          setBreakTimeLeft(breakTimeLeft -1);
+        if (timeLeft > 0) {
+          setTimeLeft(timeLeft -1);
         }else{
           //break结束了
           clearInterval(breakTimer);
-          setTimeLabel("Session")
-          setTimerStatus("start")
+          audioRef.current.play() //播放音乐
+          setBreakStatus("stop")
+
+          //切换到session倒计时
+          setTimerLabel("Session")
+          setSessionStatus("start")
+          setTimeLeft(sessionTime*SECONDS_PER_MINUTE) //设置剩余时间为session时间秒
         }
-      })
+      },1000)
 
       return ()=>{
         clearInterval(breakTimer)
       }
-      
     }
 
-
-  },[timerStatus,timeLeft,breakTime]) //计时器变化改变时执行
+  },[sessionStatus,breakStatus,timeLeft]) //计时器变化改变时执行
 
   //操控开始暂停、刷新
   function clickStartStop() {
-    // console.log("click start/stop")
+    console.log("click start/pause")
+
     setTimerStatus(timerStatus === 'stop' ? 'start' : 'stop');
+
+    if(timerLabel ==="Session") {
+      setSessionStatus(sessionStatus==="stop"? 'start': 'stop');
+    }
+    if(timerLabel ==="Break") {
+      setBreakStatus(breakStatus==="stop"? 'start': 'stop');
+    }
   }
 
   function clickReset() {
     // console.log("点击reset")
     setTimerStatus('stop')
+    setSessionStatus("stop")
+    setBreakStatus("stop")
     setSessionTime(SESSION_TIME)
     setBreakTime(BREAK_TIME)
     setTimeLeft(SESSION_TIME*SECONDS_PER_MINUTE)
@@ -98,10 +108,9 @@ function App() {
     }
   }
 
-  const minutes = Math.floor(timeLeft / 60);
-  const seconds = timeLeft % 60;
-
-
+  const  minutes = Math.floor(timeLeft / 60);
+  const  seconds = timeLeft % 60;
+  
   //设置时间的一些方法
   function handleSessionIncrease() {
     if (sessionTime >= 60) {
@@ -129,16 +138,13 @@ function App() {
     setBreakTime(breakTime - 1)
   }
 
-
-
   return (
-    
     <div className="App">
       <div id="clock-container">
         <h2 id='title'>Pomodoro Timer</h2>
 
         <div id="clock">
-          <div id='timer-label'>{timeLabel}</div>
+          <div id='timer-label'>{timerLabel}</div>
           <div id='time-left'>
             {`${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`}
           </div>
@@ -170,7 +176,6 @@ function App() {
 
             </div>
           </div>
-
           <div className='setting-item'>
             <div id='break-label'>Break Length</div>
             <div className="setting-bar">
@@ -184,12 +189,11 @@ function App() {
             </div>
           </div>
         </div>
-        
       </div>
+
       <div id="footer">
           Designed and Coded by <br /> <a href='https://github.com/gaomingyang/pomodoro-timer'>Mingyang</a>
       </div>
-      
     </div>
   );
 }
