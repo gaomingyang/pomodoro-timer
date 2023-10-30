@@ -1,0 +1,79 @@
+.App {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  // background-color: #AD504D;
+}
+
+#clock-container{
+  outline: 1px solid black;
+  width: 400px;
+  height: 400px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+
+  // #clock{
+  //   width: 280px;
+  //   height: 280px;
+  //   line-height: 280px;
+  //   font-size: 80px;
+  //   border-radius: 140px;
+  //   outline: 1px solid black;
+  // }
+
+  #clock{
+    width: 280px;
+    height: 160px;
+
+    outline: 1px solid black;
+    #time-label{
+      margin-top: 20px;
+    }
+    #time-left{
+      font-size: 80px;
+    }
+  }
+
+  #controller{
+    display: flex;
+    justify-content: center;
+    .control-btn{
+      margin: 10px 20px;
+      cursor: pointer;
+    }
+  }
+
+  #setting{
+    display: flex;
+    flex-direction: row;
+    justify-content: space-around;
+
+    .setting-item{
+      margin: 20px 10px;
+
+      .setting-bar{
+        display: flex;
+        justify-content: space-evenly;
+      }
+
+      .setting-btn{
+        width: 20px;
+        height: 20px;
+        cursor: pointer;
+      }
+    }
+  }
+}
+
+#footer{
+  margin-top: 10px;
+  // display: none;
+  a{
+    text-decoration: none;
+  }
+}
